@@ -3,7 +3,7 @@ const nodemailer = require('nodemailer')
 
 const config = {
   host: 'smtp.gmail.com',
-  port: 587,
+  port: 465,
   auth: {
     user: process.env.MAIL_USER,
     pass: process.env.MAIL_PASSWORD,
@@ -17,9 +17,9 @@ const defaultMail = {
   text: 'Hey there, its our first message sent with Nodemailer',
 }
 
-const sendMail = (to, subject, html) => {
+const send = (to, subject, html) => {
   // use default setting
-  mail = _.merge({ html }, defaultMail, to)
+  mail = _.merge({ html }, defaultMail, subject, to)
 
   // send email
   transporter.sendMail(mail, function (error, info) {
@@ -27,4 +27,4 @@ const sendMail = (to, subject, html) => {
     console.log('mail sent:', info.response)
   })
 }
-module.exports = sendMail
+module.exports = { send }
