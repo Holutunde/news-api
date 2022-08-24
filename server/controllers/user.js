@@ -76,7 +76,7 @@ const activeToken = async (req, res) => {
         return res.status(200).json({
           success: true,
           msg:
-            'Yoir account is already activated, kindly go and login to use the app',
+            'Your account is already activated, kindly go and login to use the app',
         })
       }
 
@@ -84,7 +84,7 @@ const activeToken = async (req, res) => {
       user.active = true
       user.save(function (err, user) {
         if (err) {
-          console.log('no active token')
+          console.log('Activation Unsuccessful')
         }
         //activation successful
         res.status(200).json({
