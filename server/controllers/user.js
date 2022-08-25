@@ -1,6 +1,7 @@
 const User = require('../models/userSchema')
 const crypto = require('crypto')
 const sendMail = require('../../utils/sendMail')
+const generateToken = require('../../utils/generateToken')
 
 const registerUser = async (req, res) => {
   console.log(req.body)
@@ -45,10 +46,7 @@ const registerUser = async (req, res) => {
       if (err) return next(err)
       res.status(201).json({
         success: true,
-        msg:
-          'The activation link has been sent to' +
-          newUser.email +
-          'please click on the activation link',
+        msg: `The activation link has been sent to ${newUser.email} please click on the activation link`,
       })
     })
   })
@@ -96,4 +94,32 @@ const activeToken = async (req, res) => {
   )
 }
 
-module.exports = { registerUser, activeToken }
+const loginUser = async (req, res) => {
+  const { email, password } = req.body
+
+  if (!email || !password) {
+    return res.status(400).json('Please provide email and password')
+  }
+  const user = await User.findOne({ email })
+
+  if (!user) {
+    return res.status(401).json('invalid email')
+  }
+  const confirmPassword = await user.matchPassword(password)
+
+  if (user && confirmPassword) {
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id),
+    })
+  } else {
+    res.status(401).json({
+      success: false,
+      msg: 'Unauthorized user',
+    })
+  }
+}
+
+module.exports = { registerUser, activeToken, loginUser }
