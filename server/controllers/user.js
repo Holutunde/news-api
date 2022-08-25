@@ -122,4 +122,35 @@ const loginUser = async (req, res) => {
   }
 }
 
-module.exports = { registerUser, activeToken, loginUser }
+const userProfile = async (req, res) => {
+  const { id } = req.params
+  const user = await User.findById(id)
+
+  if (user) {
+    res.json(`user with name ${user.name} found`)
+  } else {
+    res.status(404).json('User not found')
+  }
+}
+
+const updateUserProfile = async (req, res) => {
+  const { id } = req.params
+
+  const userUpdate = await User.findOneAndUpdate({ _id: id }, req.body, {
+    new: true,
+    runValidators: true,
+  })
+  if (userUpdate) {
+    res.status(200).json(`user with name ${userUpdate.name} updated`)
+  } else {
+    res.status(404).json('User not found')
+  }
+}
+
+module.exports = {
+  registerUser,
+  activeToken,
+  loginUser,
+  userProfile,
+  updateUserProfile,
+}
