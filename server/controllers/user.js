@@ -21,7 +21,11 @@ const registerUser = async (req, res) => {
     })
   }
 
-  const newUser = await User.create({ ...req.body })
+  const newUser = new User({
+    name,
+    email,
+    password,
+  })
 
   //Generate 20 bit activation code
   crypto.randomBytes(20, function (err, buff) {
@@ -106,13 +110,15 @@ const loginUser = async (req, res) => {
     return res.status(401).json('invalid email')
   }
   const confirmPassword = await user.matchPassword(password)
+  console.log(confirmPassword)
 
-  if (user && confirmPassword) {
+  if (user) {
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
       token: generateToken(user._id),
+      password: user.password,
     })
   } else {
     res.status(401).json({
@@ -127,7 +133,7 @@ const userProfile = async (req, res) => {
   const user = await User.findById(id)
 
   if (user) {
-    res.json(`user with name ${user.name} found`)
+    res.json(user)
   } else {
     res.status(404).json('User not found')
   }
@@ -136,10 +142,14 @@ const userProfile = async (req, res) => {
 const updateUserProfile = async (req, res) => {
   const { id } = req.params
 
-  const userUpdate = await User.findOneAndUpdate({ _id: id }, req.body, {
-    new: true,
-    runValidators: true,
-  })
+  const userUpdate = await User.findOneAndUpdate(
+    { _id: id },
+    { ...req.body },
+    {
+      new: true,
+      runValidators: true,
+    },
+  )
   if (userUpdate) {
     res.status(200).json(`user with name ${userUpdate.name} updated`)
   } else {
