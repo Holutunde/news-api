@@ -1,11 +1,10 @@
 const User = require('../models/userSchema')
+const bcrypt = require('bcryptjs')
 const crypto = require('crypto')
 const sendMail = require('../../utils/sendMail')
 const generateToken = require('../../utils/generateToken')
 
 const registerUser = async (req, res) => {
-  console.log(req.body)
-
   const { name, email, password } = req.body
   const user = await User.findOne({ email })
 
@@ -21,18 +20,12 @@ const registerUser = async (req, res) => {
     })
   }
 
-  const newUser = new User({
-    name,
-    email,
-    password,
-  })
+  const newUser = await User.create({ ...req.body })
 
   //Generate 20 bit activation code
   crypto.randomBytes(20, function (err, buff) {
     //Activation link
     newUser.activeToken = newUser._id
-
-    console.log(newUser._id)
 
     //Expiration to 24 hours
     newUser.activeExpires = Date.now() + 24 * 3600 * 1000
@@ -45,7 +38,7 @@ const registerUser = async (req, res) => {
       html:
         'Please click <a href="' + link + '">here</a> to activate your account',
     })
-    console.log(newUser)
+
     newUser.save(function (err, user) {
       if (err) return next(err)
       res.status(201).json({
@@ -104,26 +97,20 @@ const loginUser = async (req, res) => {
   if (!email || !password) {
     return res.status(400).json('Please provide email and password')
   }
-  const user = await User.findOne({ email })
+  const logUser = await User.findOne({ email })
 
-  if (!user) {
+  if (!logUser) {
     return res.status(401).json('invalid email')
   }
-  const confirmPassword = await user.matchPassword(password)
+  const confirmPassword = await logUser.confirmPassword(password)
   console.log(confirmPassword)
-
-  if (user) {
+  if (logUser && confirmPassword) {
     res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      token: generateToken(user._id),
-      password: user.password,
-    })
-  } else {
-    res.status(401).json({
-      success: false,
-      msg: 'Unauthorized user',
+      _id: logUser._id,
+      name: logUser.name,
+      email: logUser.email,
+      token: generateToken(logUser._id),
+      password: logUser.password,
     })
   }
 }
