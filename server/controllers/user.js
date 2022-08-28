@@ -116,7 +116,7 @@ const loginUser = async (req, res) => {
 }
 
 const userProfile = async (req, res) => {
-  const { id } = req.params
+  const id = req.user._id
   const user = await User.findById(id)
 
   if (user) {
@@ -127,7 +127,7 @@ const userProfile = async (req, res) => {
 }
 
 const updateUserProfile = async (req, res) => {
-  const { id } = req.params
+  const id = req.user._id
 
   const userUpdate = await User.findOneAndUpdate(
     { _id: id },

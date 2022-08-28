@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const auth = require('../../middleware/authentication')
 
 const {
   registerUser,
@@ -11,7 +12,7 @@ const {
 
 router.route('/register').post(registerUser)
 router.route('/login').post(loginUser)
-router.route('/:id').get(userProfile).patch(updateUserProfile)
+router.route('/profile').get(auth, userProfile).patch(auth, updateUserProfile)
 router.route('/active/:activeToken').get(activeToken)
 
 module.exports = router

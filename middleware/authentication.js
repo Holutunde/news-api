@@ -1,15 +1,17 @@
 const jwt = require('jsonwebtoken')
+const User = require('../server/models/userSchema')
 
 const auth = async (req, res, next) => {
   const authHeader = req.headers.authorization
-  if (authHeader && authHeader.startsWith('Bearer')) {
-    res.status(401).json('authentication error')
+  if (!authHeader || !authHeader.startsWith('Bearer')) {
+    res.status(401).json('authentication invalid')
   }
   const token = authHeader.split(' ')[1]
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET)
     const { id } = payload
-    req.user = { id }
+    req.user = await User.findById(id).select('-password')
+    console.log(req.user)
     next()
   } catch (error) {
     console.error(error)
