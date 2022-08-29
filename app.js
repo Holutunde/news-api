@@ -8,6 +8,7 @@ const connectDB = require('./database/db')
 const notFound = require('./middleware/notFound')
 
 const users = require('./server/routes/users')
+const category = require('./server/routes/category')
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
@@ -17,7 +18,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
 app.use('/api/users', users)
-
+app.use('/api/category', category)
 app.use(notFound)
 
 const port = process.env.PORT || 3000

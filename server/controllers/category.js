@@ -1,8 +1,8 @@
 const Category = require('../models/categorySchema')
 
 const addCategory = async (req, res) => {
-  const { name } = req.body
-  const category = await Category.findOne({ category_name: name })
+  const { category_name } = req.body
+  const category = await Category.findOne({ category_name })
 
   if (category) {
     return res.status(401).json({
@@ -35,6 +35,32 @@ const deleteCategory = async (req, res) => {
     msg: 'Successfully Deleted',
     data: category,
   })
+}
+
+const getAllCategories = async (req, res) => {
+  const categories = await Category.find({})
+  res.json({
+    success: true,
+    data: categories,
+  })
+}
+
+const editCategory = async (req, res) => {
+  const { id } = req.params
+  const category = await Category.findByIdAndUpdate(id, req.body, {
+    new: true,
+    runValidators: true,
+  })
+
+  if (!category) {
+    return res.status(401).json({
+      success: false,
+      msg: 'Category not found.',
+    })
+  }
+  res
+    .status(200)
+    .json({ success: true, data: category, msg: 'Successfully updated' })
 }
 
 module.exports = {
