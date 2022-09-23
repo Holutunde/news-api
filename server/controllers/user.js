@@ -23,9 +23,9 @@ const registerUser = async (req, res) => {
   const newUser = await User.create({ ...req.body })
 
   //Generate 20 bit activation code
-  crypto.randomBytes(20, function (err, buff) {
+  crypto.randomBytes(20, function (err, buf) {
     //Activation link
-    newUser.activeToken = newUser._id
+    newUser.activeToken = buf.toString('hex')
 
     //Expiration to 24 hours
     newUser.activeExpires = Date.now() + 24 * 3600 * 1000
