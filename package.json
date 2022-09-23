@@ -24,6 +24,8 @@
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "express-async-errors": "^3.1.1",
+    "express-form-data": "^2.0.18",
+    "image-to-base64": "^2.2.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
