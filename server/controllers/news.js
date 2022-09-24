@@ -4,7 +4,7 @@ const imageToBase64 = require('image-to-base64')
 
 const addNews = async (req, res, next) => {
   // const imgUrl = await uploadImage(req.files)
-  const { title, content, url, author, category, imageUrl } = req.body
+  const { title, content, url, author, category, addedBy } = req.body
 
   //const urlImage = await imageToBase64(req.files.image.path)
 
@@ -13,6 +13,7 @@ const addNews = async (req, res, next) => {
     title,
     content,
     category,
+    addedBy,
     url,
     urlToImage: `data:${req.files.image.type};base64`,
     addedAt: Date.now(),
@@ -51,7 +52,7 @@ const getAllNews = async (req, res) => {
   query.limit = perPage
 
   allNews = await News.find({})
-    .sort('-addedAt')
+    .sort('addedAt')
     .populate({ path: 'category', select: ['_id', 'category_name'] })
     .populate({ path: 'addedBy', select: ['name', 'email'] })
     .sort('-id')
@@ -67,7 +68,26 @@ const getAllNews = async (req, res) => {
   })
 }
 
+const getNewsId = async (req, res) => {
+  const news = await News.findById(req.params.newsId)
+    .populate({ path: 'category', select: ['_id', 'category_name'] })
+    .populate({ path: 'addedBy', select: ['name', 'email'] })
+  //.populate({ path: 'comments.user', select: ['name', 'email'] })
+
+  if (news) {
+    news.views = news.views + 1
+  }
+
+  await news.save()
+
+  res.json({
+    success: true,
+    data: news,
+  })
+}
+
 module.exports = {
   addNews,
   getAllNews,
+  getNewsId,
 }
