@@ -1,9 +1,10 @@
 const express = require('express')
 const router = express.Router()
-const { addNews } = require('../controllers/news')
+const { addNews, getAllNews } = require('../controllers/news')
 
-const protect = require('../../middleware/authentication')
+const authentication = require('../../middleware/authentication')
 
-router.route('/').post(addNews)
+router.route('/').post(authentication, addNews)
+router.route('/getAllNews/:pageSize/:perPage').get(getAllNews)
 
 module.exports = router
