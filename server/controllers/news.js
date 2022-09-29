@@ -15,10 +15,10 @@ const addNews = async (req, res, next) => {
     category,
     addedBy,
     url,
-    urlToImage: `data:${req.files.image.type};base64`,
+    //urlToImage: `data:${req.files.image.type};base64`,
     addedAt: Date.now(),
   })
-
+  console.log(req.files)
   if (news) {
     res.status(201).json({
       success: true,
@@ -86,8 +86,39 @@ const getNewsId = async (req, res) => {
   })
 }
 
+const getNewsByUser = async (req, res) => {
+  const { pageSize, perPage } = req.params
+  let query = {}
+  if (pageSize < 0 || pageSize == 0) {
+    response = {
+      success: false,
+      message: 'invalid page number, should start with 1',
+    }
+    return res.json(response)
+  }
+
+  query.skip = perPage * (pageSize - 1)
+  query.limit = perPage
+
+  const allNewsById = await News.find({ addedBy: req.user._id })
+    .sort('-addedAt')
+    .populate({ path: 'category', select: ['_id', 'category_name'] })
+    .populate({ path: 'addedBy', select: ['name', 'email'] })
+    .limit(Number(query.limit))
+    .skip(Number(query.skip))
+
+  // const news = await News.find({}, query).populate({ path: 'category', select: ['_id', 'category_name'] }).populate({ path: 'addedBy', select: ['name', 'email']})
+  res.json({
+    success: true,
+    count: allNewsById.length,
+    limit: Number(query.limit),
+    data: allNewsById,
+  })
+}
+
 module.exports = {
   addNews,
   getAllNews,
   getNewsId,
+  getNewsByUser,
 }
