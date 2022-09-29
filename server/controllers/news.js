@@ -15,7 +15,7 @@ const addNews = async (req, res, next) => {
     category,
     addedBy,
     url,
-    //urlToImage: `data:${req.files.image.type};base64`,
+    urlToImage: `data:${req.files.image.type};base64`,
     addedAt: Date.now(),
   })
   console.log(req.files)
@@ -68,24 +68,58 @@ const getAllNews = async (req, res) => {
   })
 }
 
-const getNewsId = async (req, res) => {
-  const news = await News.findById(req.params.newsId)
+const getNewsById = async (req, res) => {
+  console.log(req.params.id)
+  const news = await News.findById({ _id: req.params.id })
     .populate({ path: 'category', select: ['_id', 'category_name'] })
     .populate({ path: 'addedBy', select: ['name', 'email'] })
   //.populate({ path: 'comments.user', select: ['name', 'email'] })
 
   if (news) {
     news.views = news.views + 1
+  } else {
+    return res.status(401).json({
+      success: false,
+      msg: 'News not found.',
+    })
   }
-
   await news.save()
-
   res.json({
     success: true,
     data: news,
   })
 }
 
+const getNewsByCategory = async (req, res) => {
+  const { pageSize, perPage } = req.params
+  let query = {}
+  if (pageSize < 0 || pageSize == 0) {
+    response = {
+      success: false,
+      message: 'invalid page number, should start with 1',
+    }
+    return res.json(response)
+  }
+  console.log(req.params.id)
+  query.skip = perPage * (pageSize - 1)
+  query.limit = perPage
+
+  const category = await News.find({ category: req.params.id })
+    .sort('-addedAt')
+    .populate({ path: 'category', select: ['_id', 'category_name'] })
+    .populate({ path: 'addedBy', select: ['name', 'email'] })
+    .sort('-id')
+    .limit(Number(query.limit))
+    .skip(Number(query.skip))
+
+  // const news = await News.find({}, query).populate({ path: 'category', select: ['_id', 'category_name'] }).populate({ path: 'addedBy', select: ['name', 'email']})
+  res.json({
+    success: true,
+    count: category.length,
+    limit: Number(query.limit),
+    data: category,
+  })
+}
 const getNewsByUser = async (req, res) => {
   const { pageSize, perPage } = req.params
   let query = {}
@@ -100,25 +134,42 @@ const getNewsByUser = async (req, res) => {
   query.skip = perPage * (pageSize - 1)
   query.limit = perPage
 
-  const allNewsById = await News.find({ addedBy: req.user._id })
+  const allNewsByUser = await News.find({ addedBy: req.user._id })
     .sort('-addedAt')
     .populate({ path: 'category', select: ['_id', 'category_name'] })
     .populate({ path: 'addedBy', select: ['name', 'email'] })
     .limit(Number(query.limit))
     .skip(Number(query.skip))
 
-  // const news = await News.find({}, query).populate({ path: 'category', select: ['_id', 'category_name'] }).populate({ path: 'addedBy', select: ['name', 'email']})
   res.json({
     success: true,
     count: allNewsById.length,
     limit: Number(query.limit),
-    data: allNewsById,
+    data: allNewsByUser,
   })
+}
+
+const editNews = async (req, res) => {
+  const news = await News.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  })
+  if (!news) {
+    return res.status(401).json({
+      success: false,
+      msg: 'News not found.',
+    })
+  }
+  res
+    .status(200)
+    .json({ success: true, data: news, msg: 'Successfully updated' })
 }
 
 module.exports = {
   addNews,
   getAllNews,
-  getNewsId,
+  getNewsById,
   getNewsByUser,
+  editNews,
+  getNewsByCategory,
 }
