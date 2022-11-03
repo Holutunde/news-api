@@ -7,6 +7,7 @@ const {
   getNewsByUser,
   editNews,
   getNewsByCategory,
+  getSliderNews,
 } = require('../controllers/news')
 
 const authentication = require('../../middleware/authentication')
@@ -19,4 +20,5 @@ router
   .get(authentication, getNewsByUser)
 router.route('/getNewsByCategory/:id/:pageSize/:perPage').get(getNewsByCategory)
 router.route('/editNews/:id').patch(editNews)
+router.route('/getSliderNews/slider').get(getSliderNews)
 module.exports = router

@@ -100,7 +100,7 @@ const getNewsByCategory = async (req, res) => {
     }
     return res.json(response)
   }
-  console.log(req.params.id)
+
   query.skip = perPage * (pageSize - 1)
   query.limit = perPage
 
@@ -149,6 +149,19 @@ const getNewsByUser = async (req, res) => {
   })
 }
 
+const getSliderNews = async (req, res) => {
+  const news = await News.find({ addToSlider: true })
+    .populate({ path: 'category', select: ['_id', 'category_name'] })
+    .populate({ path: 'addedBy', select: ['name', 'email'] })
+  if (!news) {
+    return res.status(401).json({
+      success: false,
+      msg: 'News not found.',
+    })
+  }
+  res.status(200).json({ success: true, total: news.length, data: news })
+}
+
 const editNews = async (req, res) => {
   const news = await News.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
@@ -172,4 +185,5 @@ module.exports = {
   getNewsByUser,
   editNews,
   getNewsByCategory,
+  getSliderNews,
 }
