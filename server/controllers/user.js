@@ -103,12 +103,19 @@ const loginUser = async (req, res) => {
     return res.status(401).json('invalid email')
   }
   const confirmPassword = await logUser.confirmPassword(password)
-  console.log(confirmPassword)
-  if (logUser && confirmPassword) {
+
+  if (!logUser.active) {
+    return res
+      .status(401)
+      .json('User not verified, kindly verify through registered mail')
+  }
+
+  if (logUser.active && confirmPassword) {
     res.json({
       _id: logUser._id,
       name: logUser.name,
       email: logUser.email,
+      active: logUser.active,
       token: generateToken(logUser._id),
       password: logUser.password,
     })
