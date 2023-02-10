@@ -127,7 +127,7 @@ const userProfile = async (req, res) => {
   const user = await User.findById(id)
 
   if (user) {
-    res.json(user)
+    res.json(user)[[]]
   } else {
     res.status(404).json('User not found')
   }
